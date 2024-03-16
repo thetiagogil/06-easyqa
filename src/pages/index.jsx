@@ -1,12 +1,14 @@
+import styles from "../styles/index.module.css";
 import { useEffect, useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useSession } from "next-auth/react";
 import { useAccount } from "wagmi";
+import { useRouter } from "next/router";
 import supabase from "../utils/supabase";
+import Connect from "../components/Connect";
 
 const Index = () => {
   const { isConnected, address } = useAccount();
-  const { status } = useSession();
+  const router = useRouter();
+  const [userId, setUserId] = useState(null); // State variable to hold userId
 
   const handleAuth = async () => {
     try {
@@ -21,7 +23,8 @@ const Index = () => {
         return;
       }
 
-      // If no user found, insert a new user record
+      // If no user found, insert a new user
+      let id;
       if (!existingUser || existingUser.length === 0) {
         const { data: newUser, error } = await supabase
           .from("users")
@@ -33,8 +36,13 @@ const Index = () => {
           return;
         }
 
+        id = newUser.id;
         console.log("New user created:", newUser);
+      } else {
+        id = existingUser[0].id;
       }
+
+      setUserId(id); // Set userId state
     } catch (error) {
       console.error("Error handling authentication:", error.message);
     }
@@ -44,21 +52,21 @@ const Index = () => {
     if (isConnected) {
       handleAuth();
     }
-  }, [status, isConnected]);
+  }, [isConnected]);
+
+  useEffect(() => {
+    if (userId) {
+      router.push({
+        pathname: "/dashboard",
+        query: { userId },
+      });
+    }
+  }, [userId]);
 
   return (
-    <div>
-      {!isConnected ? (
-        <>
-          <p>User is not Connected</p>
-          <ConnectButton />
-        </>
-      ) : (
-        <>
-          <p>User is Connected</p>
-          <ConnectButton />
-        </>
-      )}
+    <div className={styles.main}>
+      <h2>Connect to your wallet to join the website!</h2>
+      <Connect />
     </div>
   );
 };
