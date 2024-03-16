@@ -6,9 +6,11 @@ import supabase from "../utils/supabase";
 import Connect from "../components/Connect";
 
 const Index = () => {
-  const { isConnected, address } = useAccount();
   const router = useRouter();
-  const [userId, setUserId] = useState(null); // State variable to hold userId
+  const { isConnected, address } = useAccount();
+  const [userId, setUserId] = useState(null);
+
+  const payload = { wallet_address: address };
 
   const handleAuth = async () => {
     try {
@@ -28,7 +30,7 @@ const Index = () => {
       if (!existingUser || existingUser.length === 0) {
         const { data: newUser, error } = await supabase
           .from("users")
-          .insert({ wallet_address: address })
+          .insert(payload)
           .select();
 
         if (error) {

@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useAccount } from "wagmi";
 import supabase from "../utils/supabase";
 import Connect from "../components/Connect";
 
 const Dashboard = () => {
   const router = useRouter();
+  const { isConnected } = useAccount();
   const { userId } = router.query;
   const [user, setUser] = useState(null);
+
+  const handleQuestionFormButtonClick = () => {
+    router.push({
+      pathname: "/question/form",
+      query: { userId },
+    });
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,7 +40,7 @@ const Dashboard = () => {
     if (userId) {
       fetchUser();
     }
-  }, [userId]);
+  }, [isConnected]);
 
   return (
     <div>
@@ -40,6 +49,7 @@ const Dashboard = () => {
       {user ? (
         <div>
           <p>User Wallet Address: {user.wallet_address}</p>
+          <button onClick={handleQuestionFormButtonClick}>Question</button>
         </div>
       ) : (
         <p>Loading user data...</p>
