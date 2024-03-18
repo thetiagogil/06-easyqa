@@ -6,11 +6,9 @@ import supabase from "../utils/supabase";
 import Connect from "../components/Connect";
 
 const Index = () => {
-  const router = useRouter();
   const { isConnected, address } = useAccount();
+  const router = useRouter();
   const [userId, setUserId] = useState(null);
-
-  const payload = { wallet_address: address };
 
   const handleAuth = async () => {
     try {
@@ -30,8 +28,8 @@ const Index = () => {
       if (!existingUser || existingUser.length === 0) {
         const { data: newUser, error } = await supabase
           .from("users")
-          .insert(payload)
-          .select();
+          .insert({ wallet_address: address })
+          .select()
 
         if (error) {
           console.log(error);
@@ -39,12 +37,11 @@ const Index = () => {
         }
 
         id = newUser.id;
-        console.log("New user created:", newUser);
       } else {
         id = existingUser[0].id;
       }
 
-      setUserId(id); // Set userId state
+      setUserId(id);
     } catch (error) {
       console.error("Error handling authentication:", error.message);
     }
@@ -54,16 +51,14 @@ const Index = () => {
     if (isConnected) {
       handleAuth();
     }
-  }, [isConnected]);
 
-  useEffect(() => {
     if (userId) {
       router.push({
         pathname: "/dashboard",
         query: { userId },
       });
     }
-  }, [userId]);
+  }, [userId, isConnected]);
 
   return (
     <div className={styles.main}>
