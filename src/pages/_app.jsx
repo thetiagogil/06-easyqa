@@ -1,11 +1,11 @@
 import "../styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-
 import { SessionProvider } from "next-auth/react";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
+import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import AuthContextProvider from "../context/UserContext";
 import {
   arbitrum,
   base,
@@ -15,7 +15,6 @@ import {
   sepolia,
   zora,
 } from "wagmi/chains";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 
 const config = getDefaultConfig({
   appName: "EASYQA",
@@ -40,7 +39,9 @@ const App = ({ Component, pageProps }) => {
       <QueryClientProvider client={client}>
         <SessionProvider session={pageProps.session}>
           <RainbowKitProvider>
-            <Component {...pageProps} />
+            <AuthContextProvider>
+              <Component {...pageProps} />
+            </AuthContextProvider>
           </RainbowKitProvider>
         </SessionProvider>
       </QueryClientProvider>

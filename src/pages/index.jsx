@@ -1,68 +1,32 @@
-import styles from "../styles/index.module.css";
-import { useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
-import supabase from "../utils/supabase";
+import { AuthContext } from "../context/UserContext";
 import Connect from "../components/Connect";
 
 const Index = () => {
-  const { isConnected, address } = useAccount();
+  const { handleAuth, userId } = useContext(AuthContext);
+  const { isConnected } = useAccount();
   const router = useRouter();
-  const [userId, setUserId] = useState(null);
-
-  const handleAuth = async () => {
-    try {
-      // Query the users table to check if the user exists
-      const { data: existingUser, error } = await supabase
-        .from("users")
-        .select()
-        .eq("wallet_address", address);
-
-      if (error) {
-        console.log(error);
-        return;
-      }
-
-      // If no user found, insert a new user
-      let id;
-      if (!existingUser || existingUser.length === 0) {
-        const { data: newUser, error } = await supabase
-          .from("users")
-          .insert({ wallet_address: address })
-          .select()
-
-        if (error) {
-          console.log(error);
-          return;
-        }
-
-        id = newUser.id;
-      } else {
-        id = existingUser[0].id;
-      }
-
-      setUserId(id);
-    } catch (error) {
-      console.error("Error handling authentication:", error.message);
-    }
-  };
 
   useEffect(() => {
     if (isConnected) {
       handleAuth();
     }
 
-    if (userId) {
+    if (isConnected && userId) {
       router.push({
         pathname: "/dashboard",
-        query: { userId },
       });
     }
   }, [userId, isConnected]);
 
   return (
-    <div className={styles.main}>
-      <h2>Connect to your wallet to join the website!</h2>
+    <div className="container d-flex flex-column justify-content-center align-items-center mt-5">
+      <h2 className="text-center mb-4">
+        Connect to your wallet to join the website!
+      </h2>
+
       <Connect />
     </div>
   );

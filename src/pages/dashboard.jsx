@@ -1,15 +1,17 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import supabase from "../utils/supabase";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/UserContext";
 import Connect from "../components/Connect";
-import useIsConnected from "../components/useIsConnected";
 import Link from "next/link";
+import useIsConnected from "../components/useIsConnected";
+import supabase from "../utils/supabase";
 
 const Dashboard = () => {
   useIsConnected();
-  const router = useRouter();
-  const { userId } = router.query;
-  const [userQuestions, setUserQuestions] = useState(null);
+  const { userId } = useContext(AuthContext);
+
+  // States
+  const [userQuestions, setUserQuestions] = useState(null); // all user the questions
+  const [othersQuestions, setOthersQuestions] = useState(null); // other users questions that have user answers
 
   // Function to fetch user's questions
   const fetchUserQuestions = async () => {
@@ -42,50 +44,156 @@ const Dashboard = () => {
     }
   };
 
+  // Function to fetch user's answers to other questions
+  const fetchOtherQuestionsWithUserAnswers = async () => {
+    try {
+      const { data: currentUserAnswers, error: currentUserAnswersError } =
+        await supabase.from("answers").select("*").eq("user_id", userId);
+
+      if (currentUserAnswersError) {
+        console.error(
+          "Error fetching user answers:",
+          currentUserAnswersError.message
+        );
+        return;
+      }
+
+      const { data: allQuestions, error: allQuestionsError } = await supabase
+        .from("questions")
+        .select("*");
+
+      if (allQuestionsError) {
+        console.error(
+          "Error fetching all questions:",
+          allQuestionsError.message
+        );
+        return;
+      }
+
+      const otherQuestions = allQuestions.filter((question) =>
+        currentUserAnswers.some((answer) => answer.question_id === question.id)
+      );
+
+      setOthersQuestions(otherQuestions);
+    } catch (error) {
+      console.error("Error fetching:", error.message);
+    }
+  };
+
   useEffect(() => {
     if (userId) {
       fetchUserQuestions();
+      fetchOtherQuestionsWithUserAnswers();
     }
   }, []);
 
   return (
-    <div className="container">
-      <div className="d-flex justify-content-end mt-4">
+    <div className="container mt-4">
+      <div className="d-flex justify-content-end mb-4">
         <Connect />
       </div>
 
-      <div className="d-flex justify-content-between align-items-center mt-4 mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="mt-4">Dashboard</h1>
 
-        <Link href={`/question/form?userId=${userId}`}>
+        <Link href={`/question/form`}>
           <p className="btn btn-primary">Add Question</p>
         </Link>
       </div>
 
       {userId ? (
-        <ul className="list-group">
-          {userQuestions?.map((question, index) => (
-            <li
-              key={index}
-              className="list-group-item d-flex justify-content-between align-items-center"
-            >
-              <div>
-                <Link href={`/question/${question.id}`}>
-                  <p className="mb-0">{question.title}</p>
-                </Link>
+        <div className="d-flex flex-column gap-4">
+          {/* Questions Table */}
+          <div>
+            {userQuestions?.length > 0 ? <h4>Questions Table</h4> : null}
 
-                <p className="mb-0">Price: {question.price}</p>
-              </div>
+            <ul className="list-group">
+              {userQuestions?.map((question, index) => (
+                <li
+                  key={index}
+                  className="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex w-50">
+                    <div className="w-75">
+                      <Link
+                        href={`/question/${question.id}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <p className="mb-0">{question.title}</p>
+                      </Link>
+                    </div>
 
-              <button
-                className="btn btn-danger"
-                onClick={() => deleteUserQuestion(question.id)}
-              >
-                X
-              </button>
-            </li>
-          ))}
-        </ul>
+                    <div>
+                      <div
+                        className="mx-2"
+                        style={{
+                          width: "1px",
+                          height: "100%",
+                          backgroundColor: "lightgray",
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-0">Price: {question.price}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <button
+                      className="btn btn-danger btn-sm me-2"
+                      onClick={() => deleteUserQuestion(question.id)}
+                    >
+                      X
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Answers Table */}
+          <div>
+            {othersQuestions?.length > 0 ? (
+              <h4>Answered Questions Table</h4>
+            ) : null}
+
+            <ul className="list-group">
+              {othersQuestions?.map((question, index) => (
+                <li
+                  key={index}
+                  className="list-group-item d-flex justify-content-between align-items-center"
+                >
+                  <div className="d-flex w-50">
+                    <div className="w-75">
+                      <Link
+                        href={`/question/${question.id}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <p className="mb-0">{question.title}</p>
+                      </Link>
+                    </div>
+
+                    <div>
+                      <div
+                        className="mx-2"
+                        style={{
+                          width: "1px",
+                          height: "100%",
+                          backgroundColor: "lightgray",
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="mb-0">Price: {question.price}</p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       ) : (
         <p>Loading...</p>
       )}
