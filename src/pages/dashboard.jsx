@@ -115,12 +115,7 @@ const Dashboard = () => {
                 >
                   <div className="d-flex w-50">
                     <div className="w-75">
-                      <Link
-                        href={`/question/${question.id}`}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <p className="mb-0">{question.title}</p>
-                      </Link>
+                      <p className="mb-0">{question.title}</p>
                     </div>
 
                     <div>
@@ -139,9 +134,16 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="d-flex gap-2">
+                    <Link
+                      href={`/question/${question.id}?userId=${userId}`}
+                      className="btn btn-primary btn-sm"
+                    >
+                      View Details
+                    </Link>
+
                     <button
-                      className="btn btn-danger btn-sm me-2"
+                      className="btn btn-danger btn-sm"
                       onClick={() => deleteUserQuestion(question.id)}
                     >
                       X
@@ -161,35 +163,46 @@ const Dashboard = () => {
             <ul className="list-group">
               {othersQuestions?.map((question, index) => (
                 <li
-                  key={index}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  <div className="d-flex w-50">
-                    <div className="w-75">
-                      <Link
-                        href={`/question/${question.id}`}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <p className="mb-0">{question.title}</p>
-                      </Link>
-                    </div>
-
-                    <div>
-                      <div
-                        className="mx-2"
-                        style={{
-                          width: "1px",
-                          height: "100%",
-                          backgroundColor: "lightgray",
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <p className="mb-0">Price: {question.price}</p>
-                    </div>
+                key={index}
+                className="list-group-item d-flex justify-content-between align-items-center"
+              >
+                <div className="d-flex w-50">
+                  <div className="w-75">
+                    <p className="mb-0">{question.title}</p>
                   </div>
-                </li>
+
+                  <div>
+                    <div
+                      className="mx-2"
+                      style={{
+                        width: "1px",
+                        height: "100%",
+                        backgroundColor: "lightgray",
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <p className="mb-0">Price: {question.price}</p>
+                  </div>
+                </div>
+
+                <div className="d-flex gap-2">
+                  <Link
+                    href={`/question/${question.id}?userId=${userId}`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    View Details
+                  </Link>
+
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => deleteUserQuestion(question.id)}
+                  >
+                    X
+                  </button>
+                </div>
+              </li>
               ))}
             </ul>
           </div>
