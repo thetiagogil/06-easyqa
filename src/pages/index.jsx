@@ -2,13 +2,14 @@ import { useContext, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
 import { AuthContext } from "../context/UserContext";
-import Connect from "../components/Connect";
+import Navbar from "../components/Navbar";
 
 const Index = () => {
   const { handleAuth, userId } = useContext(AuthContext);
   const { isConnected } = useAccount();
   const router = useRouter();
 
+  // Renderization
   useEffect(() => {
     if (isConnected) {
       handleAuth();
@@ -27,7 +28,7 @@ const Index = () => {
         Connect to your wallet to join the website!
       </h2>
 
-      <Connect />
+      <Navbar />
     </div>
   );
 };

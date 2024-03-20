@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { AuthContext } from "../../context/UserContext";
 import useIsConnected from "../../components/useIsConnected";
 import supabase from "../../utils/supabase";
-import FormLayout from "../../components/FormLayout";
+import FormLayout from "../../components/FormCreateLayout";
 
 const QuestionForm = () => {
   useIsConnected();
@@ -33,9 +33,9 @@ const QuestionForm = () => {
   };
 
   // Handle form submission
-  const handleSubmitButton = (event) => {
+  const handleSubmitButton = async (event) => { 
     event.preventDefault();
-    createQuestion();
+    await createQuestion();
     router.push("/dashboard");
   };
 
@@ -51,6 +51,7 @@ const QuestionForm = () => {
       setTitle={setTitle}
       price={price}
       setPrice={setPrice}
+      content={content}
       setContent={setContent}
       handleSubmitButton={handleSubmitButton}
       handleCancelButton={handleCancelButton}

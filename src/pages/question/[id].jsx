@@ -1,9 +1,12 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import Navbar from "../../components/Navbar";
 import Link from "next/link";
+import useIsConnected from "../../components/useIsConnected";
 import supabase from "../../utils/supabase";
 
 const QuestionDetails = () => {
+  useIsConnected();
   const router = useRouter();
   const { id, userId } = router.query;
   const questionId = id;
@@ -47,6 +50,7 @@ const QuestionDetails = () => {
         return;
       }
 
+      // Set State
       setUserQuestion(data);
 
       // Fetch wallet address for the user who made the question
@@ -78,6 +82,7 @@ const QuestionDetails = () => {
         })
       );
 
+      // Set State
       setOtherUsersAnswers(updatedAnswers);
     } catch (error) {
       console.error("Error fetching user question:", error.message);
@@ -96,24 +101,42 @@ const QuestionDetails = () => {
     }
   };
 
-  // Checking if the user has already answered the question
+  // Function to check if the user has already answered the question
   const userHasAnswered = otherUsersAnswers?.some(
     (answer) => answer.user_id === userId
   );
 
+  // Function to check if the user is the question owner
+  const isQuestionOwner = () => {
+    if (userId === userQuestion?.user_id) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  // Renderization
   useEffect(() => {
     fetchUserQuestion();
+  }, [questionId]);
+
+  useEffect(() => {
     fetchOtherUsersAnswers();
   }, []);
 
   return (
-    <div className="container">
-      <div className="mt-4 d-flex justify-content-between align-items-center">
-        <Link href={`/dashboard`} className="btn btn-primary">
-          Back
-        </Link>
+    <div className="container mt-4">
+      <div className="d-flex justify-content-end mb-4">
+        <Navbar />
+      </div>
 
-        {userQuestion && otherUsersAnswers !== null && !userHasAnswered ? (
+      <div className="mt-4 d-flex justify-content-between align-items-center">
+        <h3 className="mt-4">Question</h3>
+
+        {userQuestion &&
+        !isQuestionOwner() &&
+        otherUsersAnswers !== null &&
+        !userHasAnswered ? (
           <Link
             href={`/answer/form/?questionId=${questionId}`}
             className="btn btn-primary"
@@ -126,13 +149,11 @@ const QuestionDetails = () => {
       {/* Question*/}
       {userQuestion ? (
         <div>
-          <h3 className="mt-4">Question</h3>
-
           <div className="p-4 border">
             <div className="mb-2 d-flex gap-2 align-items-center">
               <h5 className="m-0">{userQuestion?.title}</h5>
 
-              <p className="m-0">{userQuestion?.price} €</p>
+              <p className="m-0">{userQuestion?.price} $</p>
             </div>
 
             <p className="mb-4">{userQuestion?.content}</p>
@@ -157,16 +178,27 @@ const QuestionDetails = () => {
         {otherUsersAnswers?.map((answer, index) => {
           return (
             <div key={index} className="p-4 border">
+              <p className="mb-4">{answer?.content}</p>
+
               <div className="mb-2 d-flex justify-content-between align-items-center">
-                <span></span>
+                <p
+                  className="m-0"
+                  style={{
+                    fontSize: "smaller",
+                    color: "lightGray",
+                  }}
+                >
+                  Answer by: {answer?.walletAddress}
+                </p>
+
                 <div className="d-flex gap-2">
-                  {userId === userQuestion.user_id ? (
-                    <button className="btn btn-danger btn-sm">
+                  {isQuestionOwner() ? (
+                    <button className="btn btn-success btn-sm">
                       Accept Answer
                     </button>
                   ) : null}
 
-                  {userId === userQuestion.id || userId === answer.user_id ? (
+                  {isQuestionOwner() || userId === answer.user_id ? (
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => {
@@ -178,18 +210,6 @@ const QuestionDetails = () => {
                   ) : null}
                 </div>
               </div>
-
-              <p className="mb-4">{answer?.content}</p>
-
-              <p
-                className="m-0"
-                style={{
-                  fontSize: "smaller",
-                  color: "lightGray",
-                }}
-              >
-                Answer by: {userQuestion?.walletAddress}
-              </p>
             </div>
           );
         })}

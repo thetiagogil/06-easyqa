@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { AuthContext } from "../../context/UserContext";
 import useIsConnected from "../../components/useIsConnected";
 import supabase from "../../utils/supabase";
-import FormLayout from "../../components/FormLayout";
+import FormLayout from "../../components/FormCreateLayout";
 
 const AnswerForm = () => {
   useIsConnected();
@@ -32,14 +32,10 @@ const AnswerForm = () => {
   };
 
   // Handle form submission
-  const handleSubmitButton = (event) => {
+  const handleSubmitButton = async (event) => {
     event.preventDefault();
-    if (content.length === 0) {
-      window.alert("All boxes are mandatory");
-    } else {
-      createAnswer();
-      router.push(`/question/${questionId}`);
-    }
+    await createAnswer();
+    router.push(`/question/${questionId}`);
   };
 
   // Handle cancel button click
@@ -48,7 +44,13 @@ const AnswerForm = () => {
   };
 
   return (
-    <FormLayout isQuestionForm={false} content={content} setContent={setContent} handleSubmitButton={handleSubmitButton} handleCancelButton={handleCancelButton} />
+    <FormLayout
+      isQuestionForm={false}
+      content={content}
+      setContent={setContent}
+      handleSubmitButton={handleSubmitButton}
+      handleCancelButton={handleCancelButton}
+    />
   );
 };
 

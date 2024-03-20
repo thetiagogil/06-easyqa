@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/UserContext";
-import Connect from "../components/Connect";
+import Navbar from "../components/Navbar";
 import Link from "next/link";
 import useIsConnected from "../components/useIsConnected";
 import supabase from "../utils/supabase";
+import QuestionsListLayout from "../components/QuestionsListLayout";
 
 const Dashboard = () => {
   useIsConnected();
@@ -26,27 +27,17 @@ const Dashboard = () => {
         return;
       }
 
+      // Set State
       setUserQuestions(data);
     } catch (error) {
       console.error("Error fetching user questions:", error.message);
     }
   };
 
-  // Function to delete a user question
-  const deleteUserQuestion = async (questionId) => {
-    try {
-      await supabase.from("questions").delete().eq("id", questionId);
-      setUserQuestions(
-        userQuestions.filter((question) => question.id !== questionId)
-      );
-    } catch (error) {
-      console.error("Error deleting user question:", error.message);
-    }
-  };
-
   // Function to fetch user's answers to other questions
   const fetchOtherQuestionsWithUserAnswers = async () => {
     try {
+      // Fetch the current user answers
       const { data: currentUserAnswers, error: currentUserAnswersError } =
         await supabase.from("answers").select("*").eq("user_id", userId);
 
@@ -58,6 +49,7 @@ const Dashboard = () => {
         return;
       }
 
+      // Fetch all the questions to check which question has user answer
       const { data: allQuestions, error: allQuestionsError } = await supabase
         .from("questions")
         .select("*");
@@ -70,6 +62,7 @@ const Dashboard = () => {
         return;
       }
 
+      // Set State
       const otherQuestions = allQuestions.filter((question) =>
         currentUserAnswers.some((answer) => answer.question_id === question.id)
       );
@@ -80,132 +73,73 @@ const Dashboard = () => {
     }
   };
 
+  // Function to delete a user question along with associated answers
+  const deleteUserQuestion = async (questionId) => {
+    try {
+      // Delete associated answers first
+      await supabase.from("answers").delete().eq("question_id", questionId);
+
+      // delete the question after answers are deleted
+      await supabase.from("questions").delete().eq("id", questionId);
+
+      // State
+      setUserQuestions(
+        userQuestions.filter((question) => question.id !== questionId)
+      );
+    } catch (error) {
+      console.error("Error deleting user question:", error.message);
+    }
+  };
+
+  // Renderization
   useEffect(() => {
     if (userId) {
       fetchUserQuestions();
       fetchOtherQuestionsWithUserAnswers();
     }
-  }, []);
+  }, [userId, userQuestions, othersQuestions]);
 
   return (
     <div className="container mt-4">
       <div className="d-flex justify-content-end mb-4">
-        <Connect />
+        <Navbar />
       </div>
 
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="mt-4">Dashboard</h1>
 
         <Link href={`/question/form`}>
-          <p className="btn btn-primary">Add Question</p>
+          <span className="btn btn-primary">Add Question</span>
         </Link>
       </div>
 
       {userId ? (
         <div className="d-flex flex-column gap-4">
           {/* Questions Table */}
-          <div>
-            {userQuestions?.length > 0 ? <h4>Questions Table</h4> : null}
-
-            <ul className="list-group">
-              {userQuestions?.map((question, index) => (
-                <li
-                  key={index}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  <div className="d-flex w-50">
-                    <div className="w-75">
-                      <p className="mb-0">{question.title}</p>
-                    </div>
-
-                    <div>
-                      <div
-                        className="mx-2"
-                        style={{
-                          width: "1px",
-                          height: "100%",
-                          backgroundColor: "lightgray",
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <p className="mb-0">Price: {question.price}</p>
-                    </div>
-                  </div>
-
-                  <div className="d-flex gap-2">
-                    <Link
-                      href={`/question/${question.id}?userId=${userId}`}
-                      className="btn btn-primary btn-sm"
-                    >
-                      View Details
-                    </Link>
-
-                    <button
-                      className="btn btn-danger btn-sm"
-                      onClick={() => deleteUserQuestion(question.id)}
-                    >
-                      X
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {userQuestions?.length > 0 ? (
+            <div>
+              <h4>My Questions Table</h4>
+              <QuestionsListLayout
+                map={userQuestions}
+                userId={userId}
+                deleteUserQuestion={deleteUserQuestion}
+                needsDelete={true}
+              />
+            </div>
+          ) : null}
 
           {/* Answers Table */}
-          <div>
-            {othersQuestions?.length > 0 ? (
-              <h4>Answered Questions Table</h4>
-            ) : null}
-
-            <ul className="list-group">
-              {othersQuestions?.map((question, index) => (
-                <li
-                key={index}
-                className="list-group-item d-flex justify-content-between align-items-center"
-              >
-                <div className="d-flex w-50">
-                  <div className="w-75">
-                    <p className="mb-0">{question.title}</p>
-                  </div>
-
-                  <div>
-                    <div
-                      className="mx-2"
-                      style={{
-                        width: "1px",
-                        height: "100%",
-                        backgroundColor: "lightgray",
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <p className="mb-0">Price: {question.price}</p>
-                  </div>
-                </div>
-
-                <div className="d-flex gap-2">
-                  <Link
-                    href={`/question/${question.id}?userId=${userId}`}
-                    className="btn btn-primary btn-sm"
-                  >
-                    View Details
-                  </Link>
-
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => deleteUserQuestion(question.id)}
-                  >
-                    X
-                  </button>
-                </div>
-              </li>
-              ))}
-            </ul>
-          </div>
+          {othersQuestions?.length > 0 ? (
+            <div>
+              <h4>My Answered Questions Table</h4>
+              <QuestionsListLayout
+                map={othersQuestions}
+                userId={userId}
+                deleteUserQuestion={deleteUserQuestion}
+                needsDelete={false}
+              />
+            </div>
+          ) : null}
         </div>
       ) : (
         <p>Loading...</p>
