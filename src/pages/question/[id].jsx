@@ -1,5 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useSendTransaction } from "wagmi";
+import { Alchemy, Network } from "alchemy-sdk";
 import Navbar from "../../components/Navbar";
 import Link from "next/link";
 import useIsConnected from "../../components/useIsConnected";
@@ -8,6 +10,9 @@ import supabase from "../../utils/supabase";
 const QuestionDetails = () => {
   useIsConnected();
   const router = useRouter();
+  const { sendTransaction } = useSendTransaction();
+  const [alchemy, setAlchemy] = useState(null); // Initialize Alchemy
+
   const { id, userId } = router.query;
   const questionId = id;
 
@@ -115,14 +120,56 @@ const QuestionDetails = () => {
     }
   };
 
+  // Function to handle accept answer
+  const handleAcceptAnswer = async (answerWalletAddress) => {
+    try {
+      // Send transaction using the useSendTransaction hook
+      const transactionHash = await sendTransaction({
+        to: answerWalletAddress,
+        value: userQuestion.price,
+        currency: "ETH",
+      });
+
+      // Handle success
+      console.log(
+        "Transaction sent successfully. Transaction hash:",
+        transactionHash
+      );
+    } catch (error) {
+      // Handle error
+      console.error("Error sending transaction:", error.message);
+    }
+  };
+
+  // Function to get the latest block
+  const getLatestBlock = async () => {
+    if (!alchemy) return; // Ensure Alchemy is initialized
+    try {
+      const latestBlock = await alchemy.core.getBlock("latest");
+      console.log("Latest block:", latestBlock);
+    } catch (error) {
+      console.error("Error getting latest block:", error.message);
+    }
+  };
+
   // Renderization
   useEffect(() => {
     fetchUserQuestion();
+    fetchOtherUsersAnswers();
   }, [questionId]);
 
   useEffect(() => {
-    fetchOtherUsersAnswers();
+    const settings = {
+      apiKey: "PpWGDO-5dKR7L6HMpdt2xAsteqPJAYZz",
+      network: Network.ETH_MAINNET,
+    };
+    const alchemyInstance = new Alchemy(settings);
+    setAlchemy(alchemyInstance);
   }, []);
+
+  useEffect(() => {
+    getLatestBlock();
+  }, [alchemy]);
 
   return (
     <div className="container mt-4">
@@ -192,8 +239,11 @@ const QuestionDetails = () => {
                 </p>
 
                 <div className="d-flex gap-2">
-                  {isQuestionOwner() ? (
-                    <button className="btn btn-success btn-sm">
+                  {isQuestionOwner() && !userHasAnswered ? (
+                    <button
+                      onClick={() => handleAcceptAnswer(answer.walletAddress)}
+                      className="btn btn-success btn-sm"
+                    >
                       Accept Answer
                     </button>
                   ) : null}
