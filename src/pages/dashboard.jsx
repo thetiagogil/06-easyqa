@@ -106,7 +106,7 @@ const Dashboard = () => {
       </div>
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="mt-4">Dashboard</h1>
+        <h1>Dashboard</h1>
 
         <Link href={`/question/form`}>
           <span className="btn btn-primary">Add Question</span>

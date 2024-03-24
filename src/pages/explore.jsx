@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import supabase from "../utils/supabase";
 import QuestionsListLayout from "../components/QuestionsListLayout";
 
-const Feed = () => {
+const Explore = () => {
   useIsConnected();
   const { userId } = useContext(AuthContext);
 
@@ -65,7 +65,7 @@ const Feed = () => {
         <Navbar />
       </div>
 
-      <h3 className="mt-4">Other Users Questions</h3>
+      <h1>Other Users Questions</h1>
 
       {allQuestions ? (
         <div>
@@ -82,4 +82,4 @@ const Feed = () => {
   );
 };
 
-export default Feed;
+export default Explore;
