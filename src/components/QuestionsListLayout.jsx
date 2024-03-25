@@ -30,7 +30,7 @@ const QuestionsListLayout = ({
             </div>
 
             <div className="w-25">
-              <p className="mb-0">Price: {question.price} $</p>
+              <p className="mb-0">Price: {question.price}</p>
             </div>
           </div>
 

@@ -39,7 +39,11 @@ const Dashboard = () => {
     try {
       // Fetch the current user answers
       const { data: currentUserAnswers, error: currentUserAnswersError } =
-        await supabase.from("answers").select("*").eq("user_id", userId);
+        await supabase
+          .from("answers")
+          .select("*")
+          .eq("user_id", userId)
+          .single();
 
       if (currentUserAnswersError) {
         console.error(
@@ -97,7 +101,7 @@ const Dashboard = () => {
       fetchUserQuestions();
       fetchOtherQuestionsWithUserAnswers();
     }
-  }, [userId, userQuestions, othersQuestions]);
+  }, [userId]);
 
   return (
     <div className="container mt-4">

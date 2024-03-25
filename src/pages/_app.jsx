@@ -6,28 +6,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import AuthContextProvider from "../context/UserContext";
-import {
-  arbitrum,
-  base,
-  mainnet,
-  optimism,
-  polygon,
-  sepolia,
-  zora,
-} from "wagmi/chains";
+import { mainnet, polygon, sepolia } from "wagmi/chains";
 
 const config = getDefaultConfig({
   appName: "EASYQA",
   projectId: "c09b15fda71450a020133d05cba890d2",
-  chains: [
-    mainnet,
-    polygon,
-    optimism,
-    arbitrum,
-    base,
-    zora,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
-  ],
+  chains: [mainnet, polygon, sepolia],
   ssr: true,
 });
 

@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useSendTransaction } from "wagmi";
-import { Alchemy, Network } from "alchemy-sdk";
 import Navbar from "../../components/Navbar";
 import Link from "next/link";
 import useIsConnected from "../../components/useIsConnected";
@@ -11,7 +10,6 @@ const QuestionDetails = () => {
   useIsConnected();
   const router = useRouter();
   const { sendTransaction } = useSendTransaction();
-  const [alchemy, setAlchemy] = useState(null); // Initialize Alchemy
 
   const { id, userId } = router.query;
   const questionId = id;
@@ -123,32 +121,12 @@ const QuestionDetails = () => {
   // Function to handle accept answer
   const handleAcceptAnswer = async (answerWalletAddress) => {
     try {
-      // Send transaction using the useSendTransaction hook
-      const transactionHash = await sendTransaction({
+      sendTransaction({
         to: answerWalletAddress,
         value: userQuestion.price,
-        currency: "ETH",
       });
-
-      // Handle success
-      console.log(
-        "Transaction sent successfully. Transaction hash:",
-        transactionHash
-      );
     } catch (error) {
-      // Handle error
       console.error("Error sending transaction:", error.message);
-    }
-  };
-
-  // Function to get the latest block
-  const getLatestBlock = async () => {
-    if (!alchemy) return; // Ensure Alchemy is initialized
-    try {
-      const latestBlock = await alchemy.core.getBlock("latest");
-      console.log("Latest block:", latestBlock);
-    } catch (error) {
-      console.error("Error getting latest block:", error.message);
     }
   };
 
@@ -157,19 +135,6 @@ const QuestionDetails = () => {
     fetchUserQuestion();
     fetchOtherUsersAnswers();
   }, [questionId]);
-
-  useEffect(() => {
-    const settings = {
-      apiKey: "PpWGDO-5dKR7L6HMpdt2xAsteqPJAYZz",
-      network: Network.ETH_MAINNET,
-    };
-    const alchemyInstance = new Alchemy(settings);
-    setAlchemy(alchemyInstance);
-  }, []);
-
-  useEffect(() => {
-    getLatestBlock();
-  }, [alchemy]);
 
   return (
     <div className="container mt-4">
@@ -200,7 +165,7 @@ const QuestionDetails = () => {
             <div className="mb-2 d-flex gap-2 align-items-center">
               <h5 className="m-0">{userQuestion?.title}</h5>
 
-              <p className="m-0">{userQuestion?.price} $</p>
+              <p className="m-0">{userQuestion?.price}</p>
             </div>
 
             <p className="mb-4">{userQuestion?.content}</p>
