@@ -10,9 +10,8 @@ import { mainnet, polygon, sepolia } from "wagmi/chains";
 
 const config = getDefaultConfig({
   appName: "EASYQA",
-  projectId: "c09b15fda71450a020133d05cba890d2",
+  projectId: "c09b15fda71450a020133d05cba890d2", // this projectId is from https://cloud.walletconnect.com/
   chains: [mainnet, polygon, sepolia],
-  ssr: true,
 });
 
 const client = new QueryClient();

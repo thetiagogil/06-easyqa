@@ -39,6 +39,7 @@ const UserContextProvider = ({ children }) => {
         id = existingUser[0].id;
       }
 
+      // Set State
       setUserId(id);
     } catch (error) {
       console.error("Error handling authentication:", error.message);

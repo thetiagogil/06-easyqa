@@ -5,9 +5,9 @@ import { AuthContext } from "../context/UserContext";
 import Navbar from "../components/Navbar";
 
 const Index = () => {
-  const { handleAuth, userId } = useContext(AuthContext);
-  const { isConnected } = useAccount();
   const router = useRouter();
+  const { isConnected } = useAccount();
+  const { handleAuth, userId } = useContext(AuthContext);
 
   // Renderization
   useEffect(() => {
